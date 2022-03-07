@@ -10,6 +10,7 @@ import time
 from math import exp 
 
 def Levy3(x):
+    x = np.array(x)
     n = len(x)
     y = 1 + (x - 1) / 4
     # calculate f(y(x))
@@ -28,8 +29,8 @@ def ackley(x, a=20, b=0.2, c=2*np.pi):
     return -a*exp(-b*np.sqrt(sum(x**2)/d)) - exp(sum(np.cos(c*xi) for xi in x)/d) + a + exp(1)
 
 def michalewicz(x, m=10):
-    return -sum(np.sin(v)*np.sin(i*v^2/np.pi)^(2*m) for
-               (i,v) in enumerate(x))
+    x = np.array(x)
+    return -sum(np.sin(v)*np.sin(i*v**2/np.pi)**(2*m) for (i,v) in enumerate(x))
 
 def rand_population_uniform(m,a,b):
     a = np.array(a)
@@ -39,13 +40,16 @@ def rand_population_uniform(m,a,b):
 
 def TruncatedSelection(pop,tr):
     p = np.argsort(pop)
+    #print([p[np.random.randint(tr, size=(1,2)).ravel()] for i in p])
     return [p[np.random.randint(tr, size=(1,2)).ravel()] for i in p]
 
 def SinglePointCrossover(a,b):
+    a = list(a)
+    b = list(b)
     n = len(a)
-    i = int(np.random.randint(n))  
-    print(i,a[:i],b[i:])#,np.concatenate(a[0:i],b[i:n+1]) )
-    return a[:i]+b[i:n]
+    i = np.random.randint(n)
+    #print(i,a[:i],b[i:],a[:i]+b[i:])#np.concatenate(a[:i],b[i:n]) )
+    return a[:i]+b[i:]
 
 def GaussianMutation(child,sigma):
     if np.random.rand() < sigma:
@@ -55,32 +59,33 @@ def GaussianMutation(child,sigma):
     return new_child
 
 def GeneticAlgorithm(f,population,k_max=10,sigma=0.1,trunc=10, parallel=False):
-    n = len(population)
+    #n = len(population)
     for k in range(k_max):
+        print(k)
         if parallel == True:
             pass
         else:
             f_pop = list([f(np.array(x)) for x in population])
-        parents = np.array(TruncatedSelection(f_pop,trunc)).astype(int)
+        parents = np.array(TruncatedSelection(f_pop,trunc)) #.astype(int)
         
-        children = [SinglePointCrossover(population[(p[0])],population[(p[1])]) for p in parents]
+        children = [SinglePointCrossover(population[p[0]],population[p[1]]) for p in parents]
         
         population = [GaussianMutation(child,sigma) for child in children]
+    f_pop = list([f(np.array(x)) for x in population])
+    return population[np.argmin(f_pop)]
     
-    return population[np.argsort(f(population))]
-    
 
 
-pop = rand_population_uniform(40, [0.0,0.0,0.0,0.0], [4.0,4.0,4.0,4.0])
+pop = rand_population_uniform(40, [0.0,0.0], [4.0,4.0])
 
 
-F_pop = list([Levy3(np.array(x)) for x in pop])
+F_pop = list([michalewicz(np.array(x)) for x in pop])
 
-parents = TruncatedSelection(F_pop, 16)
-parents = np.array(parents).astype(int)
+parents = TruncatedSelection(F_pop, 10)
+parents = np.array(parents) #.astype(int)
 
 children = [SinglePointCrossover(pop[p[0]],pop[p[1]]) for p in parents]
 
 population = [GaussianMutation(child,0.1) for child in children]
 
-GA = GeneticAlgorithm(Levy3,pop)
+GA = [GeneticAlgorithm(michalewicz,pop)]
