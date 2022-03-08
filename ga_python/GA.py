@@ -6,7 +6,7 @@ Created on Sun Mar  6 16:29:54 2022
 """
 
 import numpy as np
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
 
 
 def rand_population_uniform(m,a,b):

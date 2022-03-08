@@ -12,7 +12,7 @@ def Levy3(x):
     term1 = sin(pi*y[0])**2
     term3 = (y[n-1]-1)**2 *(1 + sin(2*pi*y[n-1]))**2
 
-    sum = 0 
+    sum = 0
     for x_i in y:
         new = (x_i-1)**2 * (1+10*sin(pi*x_i+1)**2)
         sum += new
@@ -25,8 +25,8 @@ def michalewicz(x, m=10):
 
 
 def ackley(x, a=20, b=0.2, c=2*π):
-    x = array(x)
     time.sleep(0.01)
+    x = array(x)
     d = len(x)
 
     return -a*exp(-b*sqrt(sum(x**2)/d)) - exp(sum(cos(c*xi) for xi in x)/d) + a + exp(1)
