@@ -12,8 +12,10 @@ k_max = 1000
 T0 = 25
 t(k) = T0/k
 
-println("\nBenchmarking Simulated Annealing baseline (Julia)...")
-@btime simulated_annealing($ackley, $(copy(x)), $t, $k_max) samples=3
+if Threads.nthreads() == 1
+    println("\nBenchmarking Simulated Annealing baseline (Julia)...")
+    @btime simulated_annealing($ackley, $(copy(x)), $t, $k_max) samples=3
+end
 
 println("\nBenchmarking Simulated Annealing parallelized (Julia)...")
 @btime simulated_annealing_p($ackley, $(copy(x)), $t, $k_max) samples=3
