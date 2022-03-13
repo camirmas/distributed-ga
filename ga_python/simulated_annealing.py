@@ -1,3 +1,4 @@
+"""This module implements Simulated Annealing optimization algorithms."""
 from numpy.random import rand, randn
 from math import exp
 from multiprocessing import Pool, Manager
@@ -8,10 +9,23 @@ T0 = 25
 
 
 def t(k):
+    """Function representing the Fast Annealing schedule."""
     return T0/(k+1)
 
 
 def simulated_annealing(f, x, k_max):
+    """
+    Performs a simple single-threaded Simulated Annealing optimization.
+
+    Args:
+        f (Function): Objective function.
+        x (list): Initial design variable values.
+        k_max (int): Maximum iterations.
+
+    Returns:
+        tuple(list, float): A tuple representing the minimizers and
+        minimum for the given objective function.
+    """
     y = f(x)
     x_best, y_best = x, y
 
@@ -28,7 +42,7 @@ def simulated_annealing(f, x, k_max):
     return x_best, y_best
 
 
-def run_sa(f, t, k, state):
+def _run_sa(f, t, k, state):
     x, y = state['x'], state['y']
     y_best = state['y_best']
 
@@ -42,7 +56,21 @@ def run_sa(f, t, k, state):
         state['x_best'], state['y_best'] = x_new, y_new
 
 
-def sa_parallel(f, x, k_max):
+def sa_parallel(f, x, k_max, processes=None):
+    """
+    Performs a simple multithreaded Simulated Annealing optimization.
+
+    Args:
+        f (Function): Objective function.
+        x (list): Initial design variable values.
+        k_max (int): Maximum iterations.
+        processes (int): Number of processes in the `Pool`.
+
+    Returns:
+        tuple(list, float): A tuple representing the minimizers and minimum for
+        the given objective function.
+    """
+    # create a `Manager` to handle state across threads.
     with Manager() as manager:
         state = manager.dict()
         y = f(x)
@@ -51,12 +79,15 @@ def sa_parallel(f, x, k_max):
         state['y'] = y
         state['y_best'] = y
 
-        p = Pool(processes=10)
+        # create a `Pool` of processes
+        p = Pool(processes=processes)
         results = []
         for k in range(k_max):
-            r = p.apply_async(run_sa, (f, t, k, state))
+            # async evaluation of iterations
+            r = p.apply_async(_run_sa, (f, t, k, state))
             results.append(r)
 
+        # block on results
         [r.get() for r in results]
 
         return state['x_best'], state['y_best']
